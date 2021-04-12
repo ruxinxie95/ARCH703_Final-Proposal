@@ -112,7 +112,7 @@ class Fractal(object):
 
 
         if self.count < 8:
-            Fractal(strline_new, self.count + 1)
+            Fractal(strline_new, self.count + 1, self.folding_angle)
 
     def VisulizeVector(self, origin, vector):
         nextPt = rs.PointAdd(origin, vector*3000)
