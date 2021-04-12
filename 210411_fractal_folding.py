@@ -4,9 +4,10 @@ import rhinoscriptsyntax as rs
 import math
 
 class Fractal(object):
-    def __init__(self, STRLINE, COUNT):
+    def __init__(self, STRLINE, COUNT, FOLDING_ANGLE):
         self.strline = STRLINE
         self.count = COUNT
+        self.folding_angle = FOLDING_ANGLE
 
         #Call the first function
         self.FindRadius()
@@ -27,8 +28,8 @@ class Fractal(object):
         trans = endPt - startPt
 
         self.Quadrangle(radius, startPt, trans)
-        self.SquareCenter(R, r2, r0, radius, 30, 45.0)
-        self.SquareCenter(R, r2, r0, radius, 30, -135.0)
+        self.SquareCenter(R, r2, r0, radius, self.folding_angle , 45.0)
+        self.SquareCenter(R, r2, r0, radius, self.folding_angle , -135.0)
 
        
     def SquareCenter(self, R, r2, r0, radius, folding_angle, rotation): 
@@ -54,7 +55,7 @@ class Fractal(object):
         rot_plane = rs.PlaneFromFrame(bridgePt, [0,0,-1],  vector)
         rotAxis = rot_plane.ZAxis
         
-        rs.RotateObject(squareCt, bridgePt, 0, rotAxis)
+        rs.RotateObject(squareCt, bridgePt, folding_angle, rotAxis)
 
         squarePlaneY = squareCt - bridgePt
 
@@ -165,7 +166,7 @@ def Main():
 
     strline = rs.GetObject("select a starting line for the Quadrangle fractal", rs.filter.curve)
     count = rs.GetInteger("type counts", 4)
-
-    Fractal(strline, count)
+    folding_angle = rs.GetInteger("what is your folding angle?", 110)
+    Fractal(strline, count, folding_angle)
     
 Main()
