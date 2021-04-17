@@ -121,10 +121,8 @@ class Fractal(object):
         strline_new = rs.AddLine(nextStartPt, newPt1_end)
         rs.RotateObject(strline_new, nextStartPt, angle)
 
-        rs.HideObject(strline_new)
-        
-
-
+        rs.ObjectLayer(strline_new, "Construction lines")
+    
         if self.count > 1:
             Fractal(strline_new, self.count - 1, self.folding_angle, self.poly_edges, self.scale)
 
@@ -178,7 +176,7 @@ class Fractal(object):
 
 def Main():
 
-
+    #Setup input param
     strline = rs.GetObject("Select a starting line for the Polygon fractal", rs.filter.curve)
     frac_count = rs.GetInteger("Type in the fractal recursion counts", 2)
     frac_count += 1
@@ -195,10 +193,12 @@ def Main():
     rs.AddLayer("Connection Squares", Color.Blue)
     rs.AddLayer("Construction lines", Color.DarkSeaGreen)
 
-
+    #Call Fractal class
     rs.EnableRedraw(False)
     Fractal(strline, frac_count, folding_angle, poly_edges, scale)
     rs.EnableRedraw(True)
+    if rs.LayerVisible("Construction lines") == True:
+        rs.LayerVisible("Construction lines", False)
 
     
 Main()
