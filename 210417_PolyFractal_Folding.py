@@ -124,14 +124,14 @@ class Fractal(object):
         
 
 
-        if self.count < 8:
-            Fractal(strline_new, self.count + 1, self.folding_angle, self.poly_edges, self.scale)
+        if self.count > 1:
+            Fractal(strline_new, self.count - 1, self.folding_angle, self.poly_edges, self.scale)
 
     def VisulizeVector(self, origin, vector):
         nextPt = rs.PointAdd(origin, vector*3000)
         line = rs.AddLine(origin, nextPt)
         circle = rs.AddCircle(nextPt, 500) 
-
+ 
 
     def Polygon(self, radius, centroid, vector):
         #Generate Polygons
@@ -177,7 +177,8 @@ def Main():
 
 
     strline = rs.GetObject("Select a starting line for the Polygon fractal", rs.filter.curve)
-    count = rs.GetInteger("Type the fractal recursion counts", 4)
+    count = rs.GetInteger("Type the fractal recursion counts", 6)
+    count += 1
     poly_edges = rs.GetInteger("How many sides of the polygon ", 6)
     scale = rs.GetReal("The scale of the squares compared with the polygon: ", 0.8, 0.1, 1)    
     ask = rs.GetInteger("Do you want 2d or 3d folding?, type '2' or 3'", 3)
