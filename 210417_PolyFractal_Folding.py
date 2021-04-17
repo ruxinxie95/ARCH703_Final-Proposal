@@ -7,18 +7,19 @@ import rhinoscriptsyntax as rs
 import math
 
 class Fractal(object):
-    def __init__(self, STRLINE, COUNT, FOLDING_ANGLE, POLY_EDGES):
+    def __init__(self, STRLINE, COUNT, FOLDING_ANGLE, POLY_EDGES, SCALE):
         self.strline = STRLINE
         self.count = COUNT
         self.folding_angle = FOLDING_ANGLE
         self.poly_edges = POLY_EDGES
+        self.scale = SCALE
 
         #Call the first function
         self.FindRadius()
       
     def FindRadius(self):
         #Calculate the distance between the starting point to the center of next square
-        scale = 0.65
+
         # rad45 = math.radians(45)
         angle = 360/(2*self.poly_edges)
         rad_angle = math.radians(angle)
@@ -28,7 +29,7 @@ class Fractal(object):
         r0 = radius * (math.cos(rad_angle))
         L = radius * (math.sin(rad_angle))
 
-        r2 = scale * L
+        r2 = self.scale * L
         R = r0 + r2
 
         startPt = rs.CurveStartPoint(self.strline)
@@ -124,7 +125,7 @@ class Fractal(object):
 
 
         if self.count < 8:
-            Fractal(strline_new, self.count + 1, self.folding_angle, self.poly_edges)
+            Fractal(strline_new, self.count + 1, self.folding_angle, self.poly_edges, self.scale)
 
     def VisulizeVector(self, origin, vector):
         nextPt = rs.PointAdd(origin, vector*3000)
@@ -174,16 +175,17 @@ class Fractal(object):
 
 def Main():
 
+
     strline = rs.GetObject("Select a starting line for the Polygon fractal", rs.filter.curve)
     count = rs.GetInteger("Type the fractal recursion counts", 4)
-    poly_edges = rs.GetInteger("How many sides of the polygon ", 6)    
+    poly_edges = rs.GetInteger("How many sides of the polygon ", 6)
+    scale = rs.GetReal("The scale of the squares compared with the polygon: ", 0.8, 0.1, 1)    
     ask = rs.GetInteger("Do you want 2d or 3d folding?, type '2' or 3'", 3)
-    print(ask)
     if ask == 2:
         folding_angle = 0
     else:
-        folding_angle = rs.GetInteger("What is the folding angle then?", 90)
+        folding_angle = rs.GetInteger("What is the folding angle then?", -90)
 
-    Fractal(strline, count, folding_angle, poly_edges)
+    Fractal(strline, count, folding_angle, poly_edges, scale)
     
 Main()
