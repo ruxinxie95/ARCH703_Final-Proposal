@@ -1,25 +1,30 @@
-"""This is the quadrangle fractal 3d lamp folding. 
+"""Polygon fractal 3d folding script. 
 """
 import rhinoscriptsyntax as rs
 import math
 
 class Fractal(object):
-    def __init__(self, STRLINE, COUNT, FOLDING_ANGLE):
+    def __init__(self, STRLINE, COUNT, FOLDING_ANGLE, POLY_EDGES):
         self.strline = STRLINE
         self.count = COUNT
         self.folding_angle = FOLDING_ANGLE
+        self.poly_edges = POLY_EDGES
 
         #Call the first function
         self.FindRadius()
       
     def FindRadius(self):
-        #Calculate the distance between the starting point to  the center of next square
+        #Calculate the distance between the starting point to the center of next square
         scale = 0.65
-        rad45 = math.radians(45)
+        # rad45 = math.radians(45)
+        angle = 360/(2*self.poly_edges)
+        rad_angle = math.radians(angle)
+
         radius = rs.CurveLength(self.strline)
         
-        r0 = radius * (math.cos(rad45))
-        L = radius * (math.sin(rad45))
+        r0 = radius * (math.cos(rad_angle))
+        L = radius * (math.sin(rad_angle))
+
         r2 = scale * L
         R = r0 + r2
 
@@ -27,9 +32,10 @@ class Fractal(object):
         endPt = rs.CurveEndPoint(self.strline)
         trans = endPt - startPt
 
-        self.Quadrangle(radius, startPt, trans)
-        self.SquareCenter(R, r2, r0, radius, self.folding_angle , 45.0)
-        self.SquareCenter(R, r2, r0, radius, self.folding_angle , -135.0)
+        self.Polygon(radius, startPt, trans)
+        
+        self.SquareCenter(R, r2, r0, radius, self.folding_angle , angle)
+        self.SquareCenter(R, r2, r0, radius, self.folding_angle , angle - 180)
 
        
     def SquareCenter(self, R, r2, r0, radius, folding_angle, rotation): 
@@ -60,26 +66,28 @@ class Fractal(object):
         squarePlaneY = squareCt - bridgePt
 
         # rs.AddPoint(newPt)
-        self.NextQuadrangleCenter(r2, squarePlaneY, squareCt, rotAxis)
+
+        self.NextPolygonCenter(r2, squarePlaneY, squareCt, rotAxis)
 
 
-
-    def NextQuadrangleCenter(self, r2, squarePlaneY, squareCt, rotAxis):
-        #find centerpoints of new Quadrangles
-        #Translation
+    def NextPolygonCenter(self, r2, squarePlaneY, squareCt, rotAxis):
+        #Find the center points of the new Polygons
 
         rad45 = math.radians(45)
-        r3 = r2/(math.tan(rad45))
-        r4 = r2/(math.sin(rad45))
+        angle = 360/(2*self.poly_edges)
+        rad_angle = math.radians(angle)
+
+        r3 = r2/(math.tan(rad_angle))
+        r4 = r2/(math.sin(rad_angle))
         R1 = r2 + r3
 
         # squa_direction = rs.VectorRotate(direction, 45, [0,0,1])
-        rad45 = math.radians(45)
-        squa_radius = r2/(math.sin(rad45))
+
+        squa_radius = r2/(math.cos(rad45))
 
         self.Square(squa_radius, squareCt, squarePlaneY, rotAxis)
 
-        #Draw the next quadrangle center
+        #Draw the next Polygon center
         squarePlaneY = rs.VectorUnitize(squarePlaneY)
         
         bridgePt2 = rs.PointAdd(squareCt, squarePlaneY * r2)
@@ -100,19 +108,20 @@ class Fractal(object):
         direction = unitdirection * R1
         newPt1 = rs.PointAdd(direction, squareCt)
 
-        radius2 = r3/math.cos(rad45)
+        radius2 = r3/math.cos(rad_angle)
 
         newPt1_end = rs.PointAdd(unitdirection*radius2, nextStartPt)
 
 
         strline_new = rs.AddLine(nextStartPt, newPt1_end)
-        rs.RotateObject(strline_new, nextStartPt, 45)
+        rs.RotateObject(strline_new, nextStartPt, angle)
+
         rs.HideObject(strline_new)
         
 
 
         if self.count < 8:
-            Fractal(strline_new, self.count + 1, self.folding_angle)
+            Fractal(strline_new, self.count + 1, self.folding_angle, self.poly_edges)
 
     def VisulizeVector(self, origin, vector):
         nextPt = rs.PointAdd(origin, vector*3000)
@@ -120,22 +129,22 @@ class Fractal(object):
         circle = rs.AddCircle(nextPt, 500) 
 
 
-    def Quadrangle(self, radius, centroid, vector):
-        #Generate Quadrangles
+    def Polygon(self, radius, centroid, vector):
+        #Generate Polygons
 
         vector = rs.VectorUnitize(vector)
         pts = []
 
-        for i in range(5):
+        for i in range(self.poly_edges + 1):
             pt = rs.CopyObject(centroid, vector*radius)
 
             # rs.AddPoint(pt)
 
-            rotation = 90
+            rotation = 360 / (self.poly_edges)
             vector = rs.VectorRotate(vector, rotation, [0,0,1])
             pts.append(pt)
         
-        Quadrangle = rs.AddPolyline(pts)
+        Polygon = rs.AddPolyline(pts)
         rs.DeleteObjects(pts)
     
     def Square(self, radius, centroid, PlaneY, PlaneX):
@@ -161,12 +170,12 @@ class Fractal(object):
 
 
 def Main():
-    
-    #select point as center point to start
 
-    strline = rs.GetObject("select a starting line for the Quadrangle fractal", rs.filter.curve)
-    count = rs.GetInteger("type counts", 4)
-    folding_angle = rs.GetInteger("what is your folding angle?", 30)
-    Fractal(strline, count, folding_angle)
+    strline = rs.GetObject("Select a starting line for the Polygon fractal", rs.filter.curve)
+    count = rs.GetInteger("Type the fractal recursion counts", 4)
+    folding_angle = rs.GetInteger("What is the folding angle?", 30)
+    poly_edges = rs.GetInteger("How many sides of the polygon ", 6)
+
+    Fractal(strline, count, folding_angle, poly_edges)
     
 Main()
