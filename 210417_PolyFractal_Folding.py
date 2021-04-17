@@ -5,6 +5,7 @@ Students: Mehdi Shirvani, Ruxin Xie
 """
 import rhinoscriptsyntax as rs
 import math
+from System.Drawing import Color
 
 class Fractal(object):
     def __init__(self, STRLINE, COUNT, FOLDING_ANGLE, POLY_EDGES, SCALE):
@@ -149,6 +150,7 @@ class Fractal(object):
             pts.append(pt)
         
         Polygon = rs.AddPolyline(pts)
+        rs.ObjectLayer(Polygon, "Polygons")
         rs.DeleteObjects(pts)
     
     def Square(self, radius, centroid, PlaneY, PlaneX):
@@ -169,7 +171,8 @@ class Fractal(object):
             diag_trans = rs.VectorRotate(diag_trans, rotation, squarePlane.ZAxis)
             pts.append(pt)
         
-        rs.AddPolyline(pts)
+        square = rs.AddPolyline(pts)
+        rs.ObjectLayer(square, "Connection Squares")
         rs.DeleteObjects(pts)
 
 
@@ -177,16 +180,25 @@ def Main():
 
 
     strline = rs.GetObject("Select a starting line for the Polygon fractal", rs.filter.curve)
-    count = rs.GetInteger("Type the fractal recursion counts", 6)
-    count += 1
-    poly_edges = rs.GetInteger("How many sides of the polygon ", 6)
+    frac_count = rs.GetInteger("Type in the fractal recursion counts", 2)
+    frac_count += 1
+    poly_edges = rs.GetInteger("How many sides of the polygon?", 6)
     scale = rs.GetReal("The scale of the squares compared with the polygon: ", 0.8, 0.1, 1)    
     ask = rs.GetInteger("Do you want 2d or 3d folding?, type '2' or 3'", 3)
     if ask == 2:
         folding_angle = 0
     else:
         folding_angle = rs.GetInteger("What is the folding angle then?", -90)
+    
+    #Creat layers to collect the result/ construction lines
+    rs.AddLayer("Polygons",Color.Red)
+    rs.AddLayer("Connection Squares", Color.Blue)
+    rs.AddLayer("Construction lines", Color.DarkSeaGreen)
 
-    Fractal(strline, count, folding_angle, poly_edges, scale)
+
+    rs.EnableRedraw(False)
+    Fractal(strline, frac_count, folding_angle, poly_edges, scale)
+    rs.EnableRedraw(True)
+
     
 Main()
