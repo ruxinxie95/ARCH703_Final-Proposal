@@ -35,7 +35,7 @@ class Fractal(object):
         self.Polygon(radius, startPt, trans)
         
         self.SquareCenter(R, r2, r0, radius, self.folding_angle , angle)
-        self.SquareCenter(R, r2, r0, radius, self.folding_angle , angle - 180)
+        self.SquareCenter(R, r2, r0, radius, self.folding_angle , angle*(-2)+(-1)*angle)
 
        
     def SquareCenter(self, R, r2, r0, radius, folding_angle, rotation): 
@@ -173,8 +173,13 @@ def Main():
 
     strline = rs.GetObject("Select a starting line for the Polygon fractal", rs.filter.curve)
     count = rs.GetInteger("Type the fractal recursion counts", 4)
-    folding_angle = rs.GetInteger("What is the folding angle?", 30)
-    poly_edges = rs.GetInteger("How many sides of the polygon ", 6)
+    poly_edges = rs.GetInteger("How many sides of the polygon ", 6)    
+    ask = rs.GetInteger("Do you want 2d or 3d folding?, type '2' or 3'", 3)
+    print(ask)
+    if ask == 2:
+        folding_angle = 0
+    else:
+        folding_angle = rs.GetInteger("What is the folding angle then?", 90)
 
     Fractal(strline, count, folding_angle, poly_edges)
     
