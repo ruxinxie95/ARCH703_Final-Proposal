@@ -38,7 +38,6 @@ class Fractal(object):
         trans = endPt - startPt
 
         self.Polygon(radius, startPt, trans)
-        
         self.SquareCenter(R, r2, r0, radius, self.folding_angle , angle)
         self.SquareCenter(R, r2, r0, radius, self.folding_angle , angle*(-2)+(-1)*angle)
 
@@ -50,9 +49,13 @@ class Fractal(object):
         startPt = rs.CurveStartPoint(line1)
         endPt = rs.CurveEndPoint(line1)
 
-        #Rotate the endPt
-        rs.RotateObject(endPt, startPt, rotation)
+        print(endPt)
+        endPt1 = rs.RotateObject(endPt, startPt, rotation)
+        rs.DeleteObject(endPt1)
+
         trans = endPt - startPt
+        # rs.VectorRotate(trans, rotation, [0,0,1])
+
         direction = rs.VectorUnitize(trans)
 
         #Get the bridge point
@@ -61,32 +64,32 @@ class Fractal(object):
         #Generate the point of the connection square
         squareCt = rs.PointAdd(direction * R, startPt)
 
+
         #Construct rotation plane
         vector = squareCt - bridgePt
+
+
         rot_plane = rs.PlaneFromFrame(bridgePt, [0,0,-1],  vector)
         rotAxis = rot_plane.ZAxis
         
-        rs.RotateObject(squareCt, bridgePt, folding_angle, rotAxis)
-
+        squareCt1 = rs.RotateObject(squareCt, bridgePt, folding_angle, rotAxis, False)
+        rs.DeleteObject(squareCt1)
         squarePlaneY = squareCt - bridgePt
 
-        # rs.AddPoint(newPt)
-
         self.NextPolygonCenter(r2, squarePlaneY, squareCt, rotAxis)
-
+        squareCt = rs.AddPoint(squareCt)
+        rs.DeleteObject(squareCt)
 
     def NextPolygonCenter(self, r2, squarePlaneY, squareCt, rotAxis):
         #Find the center points of the new Polygons
 
         rad45 = math.radians(45)
-        angle = 360/(2*self.poly_edges)
+        angle = 360 / ( 2 * self.poly_edges)
         rad_angle = math.radians(angle)
 
         r3 = r2/(math.tan(rad_angle))
         r4 = r2/(math.sin(rad_angle))
         R1 = r2 + r3
-
-        # squa_direction = rs.VectorRotate(direction, 45, [0,0,1])
 
         squa_radius = r2/(math.cos(rad45))
 
@@ -107,8 +110,6 @@ class Fractal(object):
         nextZAxis *= r3
         nextStartPt = rs.PointAdd(bridgePt2, nextZAxis)
 
-
-
         unitdirection = rs.VectorUnitize(nextZAxis)
         direction = unitdirection * R1
         newPt1 = rs.PointAdd(direction, squareCt)
@@ -127,16 +128,16 @@ class Fractal(object):
             Fractal(strline_new, self.count - 1, self.folding_angle, self.poly_edges, self.scale)
 
     def VisulizeVector(self, origin, vector):
-        nextPt = rs.PointAdd(origin, vector*3000)
+        nextPt = rs.PointAdd(origin, vector*30)
         line = rs.AddLine(origin, nextPt)
-        circle = rs.AddCircle(nextPt, 500) 
+        circle = rs.AddCircle(nextPt, 5) 
  
 
     def Polygon(self, radius, centroid, vector):
         #Generate Polygons
 
         vector = rs.VectorUnitize(vector)
-        pts = []
+        pts = [] 
 
         for i in range(self.poly_edges + 1):
             pt = rs.CopyObject(centroid, vector*radius)
@@ -153,7 +154,6 @@ class Fractal(object):
     
     def Square(self, radius, centroid, PlaneY, PlaneX):
         #Generate squares that connect two pentagons
-
         PlaneY = rs.VectorUnitize(PlaneY)
         pts = []
         squarePlane = rs.PlaneFromFrame(centroid, PlaneX, PlaneY)
