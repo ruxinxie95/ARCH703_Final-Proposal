@@ -49,7 +49,6 @@ class Fractal(object):
         startPt = rs.CurveStartPoint(line1)
         endPt = rs.CurveEndPoint(line1)
 
-        print(endPt)
         endPt1 = rs.RotateObject(endPt, startPt, rotation)
         rs.DeleteObject(endPt1)
 
@@ -84,11 +83,12 @@ class Fractal(object):
         #Find the center points of the new Polygons
 
         rad45 = math.radians(45)
-        angle = 360 / ( 2 * self.poly_edges)
-        rad_angle = math.radians(angle)
 
+        angle = 360 / (2 * self.poly_edges)
+        rad_angle = math.radians(angle)
         r3 = r2/(math.tan(rad_angle))
         r4 = r2/(math.sin(rad_angle))
+
         R1 = r2 + r3
 
         squa_radius = r2/(math.cos(rad45))
@@ -120,7 +120,15 @@ class Fractal(object):
 
 
         strline_new = rs.AddLine(nextStartPt, newPt1_end)
+
+        if self.poly_edges % 2 == 0:
+            angle = 360 / (2 * self.poly_edges)
+
+        else:
+            angle = 360 / self.poly_edges
+
         rs.RotateObject(strline_new, nextStartPt, angle)
+
 
         rs.ObjectLayer(strline_new, "Construction lines")
     
@@ -176,7 +184,8 @@ class Fractal(object):
 
 def Main():
 
-    #Setup input param
+    #Setup the input param
+    
     strline = rs.GetObject("Select a starting line for the Polygon fractal", rs.filter.curve)
     frac_count = rs.GetInteger("Type in the fractal recursion counts", 2)
     frac_count += 1
@@ -194,11 +203,12 @@ def Main():
     rs.AddLayer("Construction lines", Color.DarkSeaGreen)
 
     #Call Fractal class
-    rs.EnableRedraw(False)
-    Fractal(strline, frac_count, folding_angle, poly_edges, scale)
-    rs.EnableRedraw(True)
-    if rs.LayerVisible("Construction lines") == True:
-        rs.LayerVisible("Construction lines", False)
+    if strline is not None:
+        rs.EnableRedraw(False)
+        Fractal(strline, frac_count, folding_angle, poly_edges, scale)
+        rs.EnableRedraw(True)
+        if rs.LayerVisible("Construction lines") == True:
+            rs.LayerVisible("Construction lines", False)
 
     
 Main()
