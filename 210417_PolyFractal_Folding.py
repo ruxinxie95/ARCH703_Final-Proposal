@@ -5,7 +5,9 @@ Students: Mehdi Shirvani, Ruxin Xie
 """
 import rhinoscriptsyntax as rs
 import math
+import Rhino.Geometry as rg
 from System.Drawing import Color
+
 
 class Fractal(object):
     def __init__(self, STRLINE, COUNT, FOLDING_ANGLE, POLY_EDGES, SCALE):
@@ -155,15 +157,29 @@ class Fractal(object):
             rotation = 360 / (self.poly_edges)
             vector = rs.VectorRotate(vector, rotation, [0,0,1])
             pts.append(pt)
-        
+        lines = []
         Polygon = rs.AddPolyline(pts)
+
+        #Create polygon surface
+        for count, value in enumerate(pts):
+            if count >0:
+                line = rs.AddLine(pts[count-1], pts[count])
+                lines.append(line)
+        srf = rs.AddPlanarSrf(lines)
+
+        #Specify layers
+        rs.ObjectLayer(srf, "Polygons")
         rs.ObjectLayer(Polygon, "Polygons")
+
         rs.DeleteObjects(pts)
+        rs.DeleteObjects(lines)
+
     
     def Square(self, radius, centroid, PlaneY, PlaneX):
         #Generate squares that connect two pentagons
         PlaneY = rs.VectorUnitize(PlaneY)
         pts = []
+        lines = []
         squarePlane = rs.PlaneFromFrame(centroid, PlaneX, PlaneY)
         diag_trans = PlaneX + PlaneY
         diag_trans = rs.VectorUnitize(diag_trans)
@@ -178,8 +194,20 @@ class Fractal(object):
             pts.append(pt)
         
         square = rs.AddPolyline(pts)
+
+        #Create polygon surface
+        for count, value in enumerate(pts):
+            if count >0:
+                line = rs.AddLine(pts[count-1], pts[count])
+                lines.append(line)
+        srf = rs.AddPlanarSrf(lines)
+
+        #Specify layers
+        rs.ObjectLayer(srf, "Connection Squares")
         rs.ObjectLayer(square, "Connection Squares")
+
         rs.DeleteObjects(pts)
+        rs.DeleteObjects(lines)
 
 
 def Main():
@@ -198,7 +226,7 @@ def Main():
         folding_angle = rs.GetInteger("What is the folding angle then?", -90)
     
     #Creat layers to collect the result/ construction lines
-    rs.AddLayer("Polygons",Color.Red)
+    rs.AddLayer("Polygons",Color.Yellow)
     rs.AddLayer("Connection Squares", Color.Blue)
     rs.AddLayer("Construction lines", Color.DarkSeaGreen)
 
